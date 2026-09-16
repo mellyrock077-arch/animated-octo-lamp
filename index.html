@@ -1,2 +1,206 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Error><Code>AccessDenied</Code><Message>Request has expired</Message><X-Amz-Expires>3600</X-Amz-Expires><Expires>2026-09-16T11:57:00Z</Expires><ServerTime>2026-09-16T12:20:13Z</ServerTime><RequestId>2BKG5BPDKNQ0NFJ4</RequestId><HostId>8Tw+rcC2OGi3k7V8Mm/8HfI2npQizBq2I8n3cNnZnV35neY5Pi83SYbH1+8teWdyvxOjEeeS0cBt6gPkwEtaQDO4B7HvRfT1</HostId></Error>
+index.html
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KlarHaut — Behandlungsberatung & Preisvergleich</title>
+<style>
+  :root{
+    --pink:#e8a0b4; --pink-dark:#c96f8a; --bg:#fff7f8; --text:#2b2b2b; --muted:#7a7a7a;
+    --card:#ffffff; --border:#f0dde1; --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
+  header{padding:24px 20px 16px;text-align:center;}
+  header h1{margin:0;font-size:26px;color:var(--pink-dark);}
+  header p{margin:6px 0 0;color:var(--muted);font-size:14px;}
+  .lang-toggle{display:flex;justify-content:center;gap:8px;margin-top:10px;}
+  .lang-toggle button{border:1px solid var(--border);background:#fff;border-radius:20px;padding:4px 14px;font-size:13px;cursor:pointer;}
+  .lang-toggle button.active{background:var(--pink);color:#fff;border-color:var(--pink);}
+  main{max-width:480px;margin:0 auto;padding:0 16px 60px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.03);}
+  .card h2{margin:0 0 14px;font-size:18px;color:var(--pink-dark);}
+  .options{display:flex;flex-direction:column;gap:10px;}
+  .opt{border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;font-size:15px;transition:all .15s;}
+  .opt:hover{border-color:var(--pink);}
+  .opt.selected{border-color:var(--pink-dark);background:#fdeef1;font-weight:600;}
+  .progress{display:flex;gap:6px;margin-bottom:18px;}
+  .progress div{flex:1;height:4px;border-radius:4px;background:var(--border);}
+  .progress div.done{background:var(--pink-dark);}
+  .btn{display:block;width:100%;padding:13px;border:none;border-radius:10px;background:var(--pink-dark);color:#fff;font-size:15px;font-weight:600;cursor:pointer;margin-top:6px;}
+  .btn:disabled{background:#ddd;cursor:not-allowed;}
+  .btn.secondary{background:#fff;color:var(--pink-dark);border:1.5px solid var(--pink-dark);}
+  .hidden{display:none;}
+  .result-item{border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
+  .result-item h3{margin:0 0 4px;font-size:16px;}
+  .result-item p{margin:0;font-size:13px;color:var(--muted);}
+  .tag{display:inline-block;background:#fdeef1;color:var(--pink-dark);font-size:11px;padding:2px 8px;border-radius:12px;margin-top:6px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px;}
+  th,td{border-bottom:1px solid var(--border);padding:8px 6px;text-align:left;}
+  th{color:var(--muted);font-weight:600;font-size:12px;}
+  .badge{background:#e6f4ea;color:#2e7d46;font-size:11px;padding:2px 6px;border-radius:8px;}
+  .disclaimer{font-size:12px;color:var(--muted);text-align:center;margin-top:20px;line-height:1.5;}
+  .fav-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;margin-top:8px;}
+  .fav-btn.active{background:var(--pink);color:#fff;border-color:var(--pink);}
+  .provider-row{display:flex;justify-content:space-between;align-items:center;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>KlarHaut</h1>
+  <p id="tagline">Behandlung finden. Preise vergleichen. Klarheit gewinnen.</p>
+  <div class="lang-toggle">
+    <button id="btn-de" class="active" onclick="setLang('de')">DE</button>
+    <button id="btn-en" onclick="setLang('en')">EN</button>
+  </div>
+</header>
+
+<main>
+
+  <div class="progress" id="progress">
+    <div></div><div></div><div></div><div></div>
+  </div>
+
+  <div class="card step" id="step-1">
+    <h2 id="q1-title">Was ist dein Hautanliegen?</h2>
+    <div class="options" id="q1-options"></div>
+    <button class="btn" id="next-1" disabled onclick="goStep(2)">Weiter</button>
+  </div>
+
+  <div class="card step hidden" id="step-2">
+    <h2 id="q2-title">Welcher Bereich?</h2>
+    <div class="options" id="q2-options"></div>
+    <button class="btn secondary" onclick="goStep(1)" id="back-2">Zurück</button>
+    <button class="btn" id="next-2" disabled onclick="goStep(3)">Weiter</button>
+  </div>
+
+  <div class="card step hidden" id="step-3">
+    <h2 id="q3-title">Dein Budget pro Behandlung?</h2>
+    <div class="options" id="q3-options"></div>
+    <button class="btn secondary" onclick="goStep(2)" id="back-3">Zurück</button>
+    <button class="btn" id="next-3" disabled onclick="goStep(4)">Weiter</button>
+  </div>
+
+  <div class="card step hidden" id="step-4">
+    <h2 id="q4-title">Wie viel Ausfallzeit ist okay?</h2>
+    <div class="options" id="q4-options"></div>
+    <button class="btn secondary" onclick="goStep(3)" id="back-4">Zurück</button>
+    <button class="btn" id="next-4" disabled onclick="showResults()">Ergebnisse ansehen</button>
+  </div>
+
+  <div class="card hidden" id="results">
+    <h2 id="results-title">Passende Behandlungen für dich</h2>
+    <div id="results-list"></div>
+    <button class="btn secondary" onclick="restart()" id="restart-btn">Neu starten</button>
+  </div>
+
+  <div class="card hidden" id="providers-card">
+    <h2 id="providers-title">Anbieter in Wien</h2>
+    <div id="providers-list"></div>
+  </div>
+
+  <div class="card hidden" id="shortlist-card">
+    <h2 id="shortlist-title">Meine Merkliste</h2>
+    <table>
+      <thead>
+        <tr>
+          <th id="th-provider">Anbieter</th>
+          <th id="th-price">Preis</th>
+          <th id="th-rating">Bewertung</th>
+        </tr>
+      </thead>
+      <tbody id="shortlist-body"></tbody>
+    </table>
+    <p id="shortlist-empty" style="font-size:13px;color:var(--muted);">Noch keine Anbieter gemerkt.</p>
+  </div>
+
+  <p class="disclaimer" id="disclaimer">
+    KlarHaut ist ein Informationsangebot und ersetzt keine medizinische Beratung.
+    Bitte kläre jede Behandlung vorab persönlich mit einer zertifizierten Fachperson ab.
+  </p>
+
+</main>
+
+<script>
+const LANG = { current: 'de' };
+
+const CONTENT = {
+  de: {
+    tagline: "Behandlung finden. Preise vergleichen. Klarheit gewinnen.",
+    q1: "Was ist dein Hautanliegen?",
+    q1opts: ["Feine Linien / Falten", "Volumenverlust", "Unreinheiten / Aknenarben", "Pigmentflecken", "Erschlaffte Haut"],
+    q2: "Welcher Bereich?",
+    q2opts: ["Stirn", "Augenbereich", "Wangen", "Mund / Lippen", "Ganzes Gesicht"],
+    q3: "Dein Budget pro Behandlung?",
+    q3opts: ["Bis 150€", "150–350€", "350–600€", "Über 600€"],
+    q4: "Wie viel Ausfallzeit ist okay?",
+    q4opts: ["Keine (sofort zurück in den Alltag)", "1–2 Tage", "Bis zu einer Woche", "Ausfallzeit ist kein Problem"],
+    next: "Weiter", back: "Zurück", seeResults: "Ergebnisse ansehen",
+    resultsTitle: "Passende Behandlungen für dich",
+    restart: "Neu starten",
+    providersTitle: "Anbieter in Wien",
+    shortlistTitle: "Meine Merkliste",
+    thProvider: "Anbieter", thPrice: "Preis", thRating: "Bewertung",
+    shortlistEmpty: "Noch keine Anbieter gemerkt.",
+    fav: "Merken", faved: "Gemerkt ✓",
+    contact: "Kontakt öffnen",
+    disclaimer: "KlarHaut ist ein Informationsangebot und ersetzt keine medizinische Beratung. Bitte kläre jede Behandlung vorab persönlich mit einer zertifizierten Fachperson ab."
+  },
+  en: {
+    tagline: "Find the right treatment. Compare prices. Decide with clarity.",
+    q1: "What's your skin concern?",
+    q1opts: ["Fine lines / wrinkles", "Volume loss", "Blemishes / acne scars", "Pigmentation spots", "Loose / sagging skin"],
+    q2: "Which area?",
+    q2opts: ["Forehead", "Eye area", "Cheeks", "Mouth / lips", "Whole face"],
+    q3: "Your budget per treatment?",
+    q3opts: ["Up to €150", "€150–350", "€350–600", "Over €600"],
+    q4: "How much downtime is okay?",
+    q4opts: ["None (back to daily life immediately)", "1–2 days", "Up to a week", "Downtime isn't a problem"],
+    next: "Next", back: "Back", seeResults: "See results",
+    resultsTitle: "Treatments that fit you",
+    restart: "Start over",
+    providersTitle: "Providers in Vienna",
+    shortlistTitle: "My shortlist",
+    thProvider: "Provider", thPrice: "Price", thRating: "Rating",
+    shortlistEmpty: "No providers saved yet.",
+    fav: "Save", faved: "Saved ✓",
+    contact: "Open contact",
+    disclaimer: "KlarHaut is an informational tool and does not replace medical advice. Please discuss any treatment with a certified professional beforehand."
+  }
+};
+
+const PROCEDURES = {
+  "Feine Linien / Falten": [
+    {name:"Botulinumtoxin (Botox)", desc:"Glättet dynamische Falten durch Muskelentspannung. Wirkung nach 3–7 Tagen, hält 3–4 Monate.", tag:"Wenig Ausfallzeit"},
+    {name:"Hyaluron-Filler", desc:"Füllt Falten auf und gibt Volumen. Sofortiges Ergebnis, hält 6–12 Monate.", tag:"Sofortiges Ergebnis"}
+  ],
+  "Volumenverlust": [
+    {name:"Hyaluron-Filler", desc:"Baut verlorenes Volumen in Wangen oder Lippen wieder auf.", tag:"Sofortiges Ergebnis"},
+    {name:"Kollagen-Stimulation (z.B. Sculptra)", desc:"Regt körpereigenes Kollagen an, Ergebnis baut sich über Wochen auf.", tag:"Langfristig"}
+  ],
+  "Unreinheiten / Aknenarben": [
+    {name:"Chemisches Peeling", desc:"Erneuert die Hautoberfläche, verbessert Textur und Unreinheiten.", tag:"1–3 Tage Rötung"},
+    {name:"Microneedling", desc:"Feine Nadeln regen die Kollagenproduktion an, glättet Narben über Zeit.", tag:"Mehrere Sitzungen"}
+  ],
+  "Pigmentflecken": [
+    {name:"Laserbehandlung", desc:"Zielgerichtete Lichtenergie reduziert Pigmentflecken gezielt.", tag:"Mehrere Sitzungen"},
+    {name:"Chemisches Peeling", desc:"Hellt Pigmentflecken durch Erneuerung der Hautschichten auf.", tag:"1–3 Tage Rötung"}
+  ],
+  "Erschlaffte Haut": [
+    {name:"Ultraschall-Straffung (HIFU)", desc:"Strafft Haut nicht-invasiv durch fokussierten Ultraschall.", tag:"Keine Ausfallzeit"},
+    {name:"Kollagen-Stimulation", desc:"Regt Kollagen an für allmähliche Straffung.", tag:"Langfristig"}
+  ]
+};
+const PROCEDURES_EN_MAP = {
+  "Fine lines / wrinkles": PROCEDURES["Feine Linien / Falten"],
+  "Volume loss": PROCEDURES["Volumenverlust"],
+  "Blemishes / acne scars": PROCEDURES["Unreinheiten / Aknenarben"],
+  "Pigmentation spots": PROCEDURES["Pigmentflecken"],
+  "Loose / sagging skin": PROCEDURES["Erschlaffte Haut"]
+};
+
+const PROVIDERS = [
+  {name:"Haut & Form Wien", procedure:"Botox / Filler", price:"€290–420", rating:4.8, cer
